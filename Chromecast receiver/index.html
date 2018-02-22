@@ -1,0 +1,302 @@
+<!--
+Copyright 2014 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ -->
+<!--
+This sample demonstrates how to build your own Receiver for use with Google
+Cast.
+
+A receiver is typically an HTML5 application with a html, css, and JavaScript
+components.
+
+In this HTML5 page, we include our style sheet, the Receiver SDK, and our player
+JavaScript code.
+
+We Then define two layers within the player:
+
+1. The media layers
+2. The Overlay layers
+The overlay layer holds:
+   a. Logo for startup page
+   b. Media Artwork and information during loading
+   c. controls for Pause / Seek
+ -->
+<!DOCTYPE html> 
+<html>
+<head>
+  <title>Cast Reference Receiver</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://www.engtestsite.com/bsdk/Chromecast receiver/player.css" />
+  <script type="text/javascript" src="https://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+  <script>!function(t,n){t[n]=t[n]||{nlsQ:function(e,o,c,r,s,i){return s=t.document,r=s.createElement("script"),r.async=1,r.src=("http:"===t.location.protocol?"http:":"https:")+"//cdn-gl.imrworldwide.com/conf/"+e+".js#name="+o+"&ns="+n,i=s.getElementsByTagName("script")[0],i.parentNode.insertBefore(r,i),t[o]=t[o]||{g:c,ggPM:function(n,e,c,r,s){(t[o].q=t[o].q||[]).push([n,e,c,r,s])}},t[o]}}}(window,"NOLBUNDLE");
+  </script>
+  <script type="text/javascript" src="https://www.gstatic.com/cast/sdk/libs/mediaplayer/1.0.0/media_player.js"></script>
+  <script type="text/javascript" src="https://www.engtestsite.com/bsdk/Chromecast receiver/player.js"></script>
+  <script src="https://chromecast.jwpsrv.com/receiver/"></script>
+  
+</head>
+<body style="margin: 0">
+    <div id="player" class="player">
+        <div class="media">
+            <video></video>
+        </div>
+        <div class="logo"></div>
+        <div class="spinner"></div>
+        <div class="watermark"></div>
+        <div class="gradient"></div>
+        <div class="overlay">
+            <div class="media-info">
+                <div class="media-artwork"></div>
+                <div class="media-text">
+                    <div class="media-title"></div>
+                    <div class="media-subtitle"></div>
+                </div>
+            </div>
+            <div class="preview-mode-info">
+                <div class="preview-mode-artwork"></div>
+                <div class="preview-mode-text">
+	                <div class="preview-mode-timer">
+                        <div class="preview-mode-timer-starts">Up next in&nbsp;</div>
+                        <div class="preview-mode-timer-countdown"></div>
+                        <div class="preview-mode-timer-sec">&nbsp;secs...</div>
+                    </div>
+                    <div class="preview-mode-title"></div>
+                    <div class="preview-mode-subtitle"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <span class="controls-play-pause"></span>
+                <span class="controls-cur-time"></span>
+                <span class="controls-total-time"></span>
+                <div class="controls-progress">
+                    <div class="controls-progress-inner progressBar"></div>
+                    <div class="controls-progress-thumb"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+      var playerDiv = document.getElementById('player');
+      new sampleplayer.CastPlayer(playerDiv).start();
+    </script>
+	<script>
+		(function(){
+			var ns = window.LSOPTOUT = window.LSOPTOUT || {};
+			var localStorageId = "-1",
+				webProtocol = window.location.protocol || "http:",
+				baseaddr = ".imrworldwide.com/",
+				gIframe,
+				lsIdKey = "nol_lsid",
+				built = false,
+				buildVersion = "2.0.0",
+				_callback = null;
+				
+			if (webProtocol.indexOf('http') !== 0){
+				// set to web protocol if it is not a web protocol - overrides non-web protocols such as file://
+				webProtocol = 'http:';
+			}
+
+			ns.getLS = function () {
+				return gIframe;
+			};
+			
+			ns.lsIsSupported = function() {
+				try {
+				var storage = window.localStorage,
+						x = 'lsAvailTest';
+					storage.setItem(x, x);
+					storage.removeItem(x);
+					return true;
+				}
+				catch(e) {
+					return false;
+				}
+			};
+			
+			ns.setLsId = function(val){
+				if(typeof val !== 'undefined'){
+					localStorageId = val;
+					lsId(localStorageId);
+				} else {
+					//console.log("Val not passed");
+					//val not passed
+				}
+			};
+			
+			ns.getLsId = function(callback){
+						
+				_callback = callback;
+				gIframe.contentWindow.postMessage(JSON.stringify({key:lsIdKey, eventType:"get", storageType:"local"}), gIframe.src);
+			};
+							
+			ns.initLsFrame = function(subdomain, callback){
+			
+				var iframe = document.getElementById('lsframe');
+				
+				if ((iframe && iframe['data-subdomain'] != subdomain)
+					|| !iframe){
+					
+					if (iframe){
+						// remove old ls iframe
+						try {
+							iframe.remove();		
+						} catch(e){
+							iframe.parentNode.removeChild(iframe);
+						}
+					}// if
+					
+					// create new ls iframe with correct subdomain
+					createLsFrame(subdomain, callback);
+				} else {
+					
+					if (callback){
+						callback(gIframe, subdomain);
+					}
+				}
+				
+			};
+			
+			ns.delete = function(){
+				
+				gIframe.contentWindow.postMessage(JSON.stringify({key:lsIdKey, eventType:"delete", storageType:"local"}), gIframe.src);
+			};
+			
+			ns.clearLSFrames = function(){
+			
+			};
+			
+			function lsId(val){
+				if(gIframe === undefined){/*console.log("IFRAME NOT THERE");*/return;}
+				if(typeof(val) === 'undefined'){
+					//Return back the val stored in localstorage
+					gIframe.contentWindow.postMessage(JSON.stringify({key:lsIdKey, eventType:"get", storageType:"local"}), gIframe.src);
+					return;
+				} else {
+					//Set our localstorage value to val
+					gIframe.contentWindow.postMessage(JSON.stringify({key:lsIdKey, eventType:"set", storageType:"local", data:val}), gIframe.src);
+					return;
+				}
+			}
+						
+			
+			function createLsFrame(subdomain, callback){
+				
+				gIframe = window.document.createElement("iframe");
+				gIframe.src = webProtocol + '//' + subdomain + baseaddr + "novms/html/ls.html";
+				gIframe.height = 0;
+				gIframe.width = 0;
+				gIframe.style.display = "none";
+				gIframe.id = 'lsframe';
+				gIframe.className = 'lsframe';
+				gIframe['data-subdomain'] = subdomain;
+				window.document.head.appendChild(gIframe);
+				
+				gIframe.onload = function() {
+					//When the iFrame is loaded, go about populating the localStorageId	
+					lsId();
+					
+					if (callback){
+						setTimeout(function(){
+							callback(gIframe, subdomain);
+						});
+					}
+				};
+				
+				return gIframe;
+			}			
+			
+			function parseJSON(json){
+			
+				try {
+					var temp = JSON.parse(json);
+					return temp;
+				} catch(e){
+					return json;
+				}
+			}
+			
+			// listen for response messages			
+			window.addEventListener("message", function (e) {
+			
+				if (e.origin.indexOf("imrworldwide.com") > -1 && e.data && e.data.type === "lsget") {
+
+					var val = e.data.val !== "" ? parseJSON(e.data.val) : e.data.val;
+					
+					if (_callback){
+						_callback(val);
+						_callback = null;
+					}// if
+				}// if
+			});
+			
+		}());
+	</script>
+	<script>
+		//Handling optout
+		window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
+
+		window.customMessageBus = window.castReceiverManager.getCastMessageBus('urn:x-cast:optout-listener', cast.receiver.CastMessageBus.MessageType.JSON);
+		window.customMessageBus.onMessage = function(event) {
+			var sender = event.senderId;
+			var message = event.data;
+			//optOut(message.data,'secure-uat');
+			getOttStatus(message);
+
+		};
+
+		function getOttStatus(data){
+			debugger;
+		};
+		
+		function optOut(option, domain)
+			{
+		
+				if (getURLParameter('hyb') != null)
+					window.parent.postMessage('{"cmd":"optout", "val":"' + option + '"}', window.document.referrer);
+				else
+				    location.href = "#"; 
+				//'nielsenappsdk://' + option;
+				//Start of code block for handling the optout handling for local storage
+				//Handle the local storage writing
+				if(window.LSOPTOUT && window.LSOPTOUT.lsIsSupported()){
+					/* If user opts out then we set val to OPTOUT and if they opt back in then we set it to empty string */
+					var val = (option == 1) ? "OPTOUT" : "";
+					
+					var sfcode = domain;
+					
+					window.LSOPTOUT.initLsFrame(sfcode, function(iframe, sfcode){					
+						window.LSOPTOUT.setLsId(val);
+						handleCookie(val);
+					});
+					
+				}
+				//End of code block handling the optout logic for local storage
+			}
+			
+		function handleCookie(val){
+			if (val === undefined) {return;}
+			var img = new Image(),
+				baseUrl = "http://server-us.imrworldwide.com/cgi-bin/o?oo=",
+				finalUrl = (val === "OPTOUT") ? (baseUrl + "total") : (baseUrl + "cancel");
+			img.onerror = function(e){/*console.log("Error is: ", e);*/};
+			img.onload = function(e){/*console.log("All successful");*/};
+			img.src = finalUrl;
+			}
+		function getURLParameter(name)
+			{
+				return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+			} 
+	</script>
+</body>
+</html>

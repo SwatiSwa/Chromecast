@@ -1,0 +1,73 @@
+<testSuite>
+   <config>
+      <apid>DHG163HR-BH45-JKY6-BKH7-67GJKY68GJK6</apid>
+      <!--  WILL PULL TAGS FOR ALL PROCDUCTS  -->
+      <!-- <apid>THG163HR-BH45-JKY6-BKH7-67GJKY68GJK7</apid> -->
+      <!--  WILL PULL REDUCED TAG SET  -->
+      <sfcode>uat</sfcode>
+      <apn>QA_BrowserSDK</apn>
+      <nol_sdkDebug>true</nol_sdkDebug>
+      <fbtag>false</fbtag>
+   </config>
+   <testSequence id="1" desc="midroll.xml">
+      <!--
+ This first 14 is to just pass some metadata for the static tagss 
+
+      <message>
+         <send>
+            <event>14</event>
+            <param>type=static,length=10,assetid=StaticPage1,section=Chnl1,tv=true,adModel=2,dataSrc=cms</param>
+         </send>
+      </message>-->
+      <!--  This starts our standard video testing  -->
+      <message>
+         <send>
+            <event>15</event>
+            <param>type=content,length=300,title=Skydiving Across Europe,program=latacg,censuscategory=Enlisted,assetid=204558915992,section=ProgramAsset8,tv=true,adModel=2,dataSrc=cms,segA=S07E04:NBC,segB=teams,segC=AtlanataFalcons</param>
+         </send>
+      </message>
+	  <message>
+         <send>
+            <event>updateott</event>
+            <param>ottStatus=1,ottType=casting,ottDevice=chromecast,ottDeviceName=Google Chromecast,ottDeviceID=1234-5678-9012,ottDeviceManufacturer=Google,ottDeviceModel=ChromeCastModel,ottDeviceVersion=1.0.0,ottOptOutStatus=true</param>
+         </send>
+      </message>
+	  <message>
+         <scrub>180</scrub>
+      </message>
+	   <message>
+         <wait>120</wait>
+      </message>
+	  <message>
+         <send>
+            <event>updateott</event>
+            <param>ottStatus=0,ottType=casting,ottDevice=chromecast,ottDeviceName=Google Chromecast,ottDeviceID=1234-5678-9012,ottDeviceManufacturer=Google,ottDeviceModel=ChromeCastModel,ottDeviceVersion=1.0.0,ottOptOutStatus=true</param>
+         </send>
+      </message>
+	  <message>
+         <scrub>300</scrub>
+      </message>
+	  <message>
+         <wait>300</wait>
+      </message>
+	  <message>
+         <send>
+            <event>updateott</event>
+            <param>ottStatus=1,ottType=casting,ottDevice=chromecast,ottDeviceName=Google Chromecast,ottDeviceID=1234-5678-9012,ottDeviceManufacturer=Google,ottDeviceModel=ChromeCastModel,ottDeviceVersion=1.0.0,ottOptOutStatus=true</param>
+         </send>
+      </message>
+	  <message>
+         <scrub>600</scrub>
+      </message>
+	  <message>
+         <wait>300</wait>
+      </message>
+	  
+      <message>
+         <send>
+            <event>57</event>
+            <param>900</param>
+         </send>
+      </message>
+   </testSequence>
+</testSuite>
